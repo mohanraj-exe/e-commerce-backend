@@ -57,7 +57,7 @@ router.post('/upload-single', upload.single('image'), async (req, res) => {
 });
 
 
-// create a product
+// create product with single image
 router.post('/', upload.single('productImage'), async (req, res) => {
 
     const { productName, productDesc,
@@ -92,7 +92,7 @@ router.post('/', upload.single('productImage'), async (req, res) => {
 
 });
 
-// create a product
+// create product with multiple images
 router.post('/product-images', upload.array('productImage'), async (req, res) => {
 
     const { productName, productDesc,
