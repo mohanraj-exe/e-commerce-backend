@@ -13,24 +13,24 @@ router.get('/', async (req, res) => {
 // Adding products in a cart
 router.post('/', async (req, res) => {
 
-    const responses = req.body.cartItems.map(async item => {
-        const findProductsInCollection = await Product.findOne({ productId: item.productId });
+    const addToCartItems = req.body.cartItems.map(async item => {
 
-        if (item.productQuantity > findProductsInCollection.productQuantity) {
-            return { Message: 'Error Occured.Try again!!!', productId: item.productId, productName: item.productName }
+        const product = await Product.findOne({ productId: item.productId });
+        if(!product.productQuantity){
+            return res.status(500).json({Message: 'Internal Server Error!!!'})
         }
 
-        if (item.productQuantity <= findProductsInCollection.productQuantity) {
-            await Cart.create({
-                cartItems: item, 
-                userId: req.user._id,
-                userName: req.user.userName,
-                email: req.user.email
-            });
-            return { Message: 'Items added to cart!!!', productId: item.productId, productName: item.productName }
-        }
+        await Cart.create({
+            cartItems: item, 
+            userId: req.user._id,
+            userName: req.user.userName,
+            email: req.user.email
+        });
+        
+        return { Message: 'Items added to cart!!!', productId: item.productId, productName: item.productName }
+        
     })
-    const data = await Promise.all([...responses])
+    const data = await Promise.all([...addToCartItems])
     return res.status(200).json(data)
 })
 

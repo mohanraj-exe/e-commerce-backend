@@ -19,14 +19,18 @@ router.post('/', async (req, res) => {
 
         // console.log(item)
         const product = await Product.findOne({ productName: item.cartItems[0].productName })
-        if(!product.productQuantity){
-            res.status(500).json({Message: 'Internal Server Error!!!'})
-        } 
 
-        await Order.create({ orderId: item._id })
-        await Cart.deleteOne({ cartId: item._id })
-        await Product.updateOne({ productName: item.cartItems[0].productName }, { productQuantity: product.productQuantity - item.cartItems[0].productQuantity})
+        if (item.cartItems[0].productQuantity <= product.productQuantity) {
+            await Order.create({ orderId: item._id })
+            await Cart.deleteOne({ cartId: item._id })
+            await Product.updateOne({ productName: item.cartItems[0].productName }, { productQuantity: product.productQuantity - item.cartItems[0].productQuantity })
+        }
+
+        if (item.cartItems[0].productQuantity > product.productQuantity) {
+            return res.status(500).json({ Message: 'Internal Server Error!!!' })
+        }
+
     })
-    return res.status(200).json({Message: 'Order placed successfully!!!'})
+    return res.status(200).json({ Message: 'Order placed successfully!!!' })
 })
 module.exports = router;
