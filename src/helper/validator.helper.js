@@ -40,9 +40,9 @@ const productsValidate = () => {
     return [
         body('productName').trim().not().isEmpty().withMessage('This field is required'),
         body('productDesc').trim().not().isEmpty().withMessage('This field is required'),
-        body('productCost').trim().not().isEmpty().withMessage('This field is required'),
-        body('productQuantity').trim().not().isEmpty().withMessage('This field is required'),
-        body('productStatus').trim().not().isEmpty().withMessage('This field is required'),
+        body('productCost').trim().not().isEmpty().withMessage('This field is required').isInt().withMessage('Must be a integer number'),
+        body('productQuantity').trim().not().isEmpty().withMessage('This field is required').isInt().withMessage('Must be a integer number'),
+        body('productStatus').trim().not().isEmpty().withMessage('This field is required').isBoolean().withMessage('It should be launched or not launched'),
         body('categoryId').trim().not().isEmpty().withMessage('This field is required'),
         body('categoryName').trim().not().isEmpty().withMessage('This field is required'),
     ]
