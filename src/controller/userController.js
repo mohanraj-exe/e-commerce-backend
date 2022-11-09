@@ -1,24 +1,22 @@
+const express = require("express");
+const router = express.Router();
 const User = require("../models/User");
 const createToken = require("../../src/helper/token.helper");
 const bcrypt = require("bcrypt");
-const validator = require("validator");
 const welcomeEmail = require("../service/WelcomeEmail");
+const { registerValidate, loginValidate } = require("../helper/validator.helper");
+const { validationResult } = require("express-validator");
 
-const register = async (req, res) => {
+// user-register
+router.post('/user-register', registerValidate(), async (req, res) => {
+
+    let errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        console.log(errors.array());
+        return res.json({ errors: errors.array() })
+    }
 
     const { userName, email, password, isAdmin } = req.body;
-
-    if (!userName && !email && !password) {
-        throw Error("All fields must be filled")
-    }
-
-    if (!validator.isEmail(email)) {
-        throw Error("Email not valid")
-    }
-
-    if (!validator.isStrongPassword(password)) {
-        throw Error("Password strong enough")
-    }
 
     const exists = await User.findOne({ email })
     if (exists) {
@@ -30,26 +28,28 @@ const register = async (req, res) => {
     const user = await User.create({ userName, email, password: hash, isAdmin })
     console.log(user)
 
-    if(!user){
+    if (!user) {
         throw Error('User not registered successfully...')
     }
-    else{
+    else {
         welcomeEmail(email, 'Dear Customer..Thanks for purchasing our products, hope you enjoy the shopping experience!!!')
     }
 
     const maxAge = 20 * 24 * 60 * 60;
     const token = createToken(user._id);
-    res.cookie('jwt', token, {httpOnly: true, maxAge: maxAge * 1000})
+    res.cookie('jwt', token, { httpOnly: true, maxAge: maxAge * 1000 })
     res.status(201).json({ Message: 'Verification email sent successfully', user, token })
-}
+})
 
-const login = async (req, res) => {
+// user-login
+router.post('/', loginValidate(), async (req, res) => {
+    let errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        console.log(errors.array());
+        return res.json({ errors: errors.array() })
+    }
 
     const { email, password } = req.body;
-
-    if (!email || !password) {
-        throw Error("All fields must be filled")
-    }
 
     const user = await User.findOne({ email })
     if (!user) {
@@ -63,18 +63,15 @@ const login = async (req, res) => {
 
     const maxAge = 20 * 24 * 60 * 60;
     const token = createToken(user._id);
-    res.cookie('jwt', token, {httpOnly: true, maxAge: maxAge * 1000})
-    res.status(200).json({email, token});
-}
+    res.cookie('jwt', token, { httpOnly: true, maxAge: maxAge * 1000 })
+    res.status(200).json({ email, token });
+})
 
-const logout = async (req, res) => {
-    await res.cookie('jwt','',{maxAge: 1})
+// user-logout
+router.post('/logout', async (req, res) => {
+    await res.cookie('jwt', '', { maxAge: 1 })
     // return res.redirect('/');
-    res.status(200).json({Message: 'User logged out successfully!!!'})  
-}
+    res.status(200).json({ Message: 'User logged out successfully!!!' })
+})
 
-module.exports = {
-    register,
-    login,
-    logout
-}
+module.exports = router;

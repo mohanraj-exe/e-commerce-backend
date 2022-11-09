@@ -3,6 +3,8 @@ const { default: mongoose } = require("mongoose");
 const router = express.Router();
 const Cart = require("../../models/Cart");
 const Product = require("../../models/Product");
+const {cartValidate} = require("../../helper/validator.helper");
+const { validationResult } = require("express-validator");
 
 // listing all products in a cart
 router.get('/', async (req, res) => {
@@ -11,7 +13,13 @@ router.get('/', async (req, res) => {
 })
 
 // Adding products in a cart
-router.post('/', async (req, res) => {
+router.post('/', cartValidate(), async (req, res) => {
+
+    let errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        console.log(errors.array());
+        return res.json({ errors: errors.array() })
+    }
 
     const addToCartItems = req.body.cartItems.map(async item => {
 

@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const {register, login, logout} = require("../controller/userController");
+const registerLogin = require("../controller/userController");
 const { isAuth, isAdmin } = require("../middleware/requireAuth");
 const adminRouter = require('./admin/index.admin');
 const userRouter = require('./user/index.user');
@@ -8,12 +8,14 @@ const cartItems = require("./user/cartItems");
 const bookOrders = require("./user/bookOrders");
 
 // register/login
-router.post('/register', register)
-router.post('/user-login', login)
+router.use('/new', registerLogin);
+router.use('/user-login', registerLogin);
 
 // admin routes- private api
 router.use('/admin', isAuth, isAdmin, adminRouter);
-router.get('/user-logout', logout);
+
+// logout
+router.use('/current/user', registerLogin);
 
 // user routes- public api
 router.use('/user', userRouter);
